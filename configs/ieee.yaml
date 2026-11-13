@@ -1,0 +1,40 @@
+# IEEE-CIS Fraud Detection (Day 3). Run: python -m src.data_ieee --config configs/ieee.yaml
+dataset: ieee
+raw_dir: data/raw/ieee            # train_transaction.csv + train_identity.csv
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  fractions: [0.6, 0.2, 0.2]      # time-based split on TransactionDT
+  max_missing: 0.9
+  max_features: 150
+  n_missing_indicators: 20
+  clip: 10.0
+  train_normal_max: 150000        # subsample normals for AE/baselines (speed)
+
+baselines:
+  iforest: {n_estimators: 300, max_samples: 256, contamination: auto}
+  ocsvm:   {nu: 0.02, gamma: scale, kernel: rbf, max_train: 20000}
+
+ae:
+  hidden: [64, 32, 16]            # wider than ULB: ~170 input features
+  epochs: 60
+  batch_size: 512
+  lr: 0.001
+  weight_decay: 0.0
+  patience: 8
+  holdout_frac: 0.1
+  train_set: normal
+
+rda:
+  hidden: [64, 32, 16]
+  outer_iters: 10
+  inner_epochs: 3
+  batch_size: 512
+  lr: 0.001
+  norm: l21
+  lam: 0.5
+  lam_quantile: 0.97              # IEEE-CIS has ~3.5% fraud, so use a lower quantile than ULB
+  lam_quantile_grid: [0.9, 0.95, 0.97, 0.98, 0.99]
+  lam_grid: [0.5, 1.0, 2.0]
+
+eval: {threshold: f1, target_recall: 0.8}

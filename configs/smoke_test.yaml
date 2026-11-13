@@ -1,0 +1,11 @@
+# Fast settings for smoke-testing on synthetic data. Do NOT use for real experiments.
+dataset: ulb_synth
+raw_path: data/raw/synthetic_creditcard.csv
+seeds: [0, 1]
+data: {split: stratified, fractions: [0.6, 0.2, 0.2], drop_time: true, scaler: robust}
+baselines:
+  iforest: {n_estimators: 100, max_samples: 256, contamination: auto}
+  ocsvm:   {nu: 0.02, gamma: scale, kernel: rbf, max_train: 4000}
+ae:  {hidden: [20, 10, 5], epochs: 15, batch_size: 256, lr: 0.001, weight_decay: 0.0, patience: 4, holdout_frac: 0.1, train_set: normal}
+rda: {hidden: [20, 10, 5], outer_iters: 5, inner_epochs: 2, batch_size: 256, lr: 0.001, norm: l21, lam: 1.0, lam_quantile: 0.99, lam_quantile_grid: [0.98, 0.995], lam_grid: [0.5, 1.5]}
+eval: {threshold: f1, target_recall: 0.8}

@@ -1,0 +1,41 @@
+# Shared config for the ULB creditcardfraud experiments.
+dataset: ulb                      # name used for folders under data/processed and outputs
+raw_path: data/raw/creditcard.csv
+seeds: [0, 1, 2, 3, 4]
+
+data:
+  split: stratified               # stratified | time
+  fractions: [0.6, 0.2, 0.2]      # train / val / test
+  drop_time: true                 # drop the "Time" column (seconds since first txn)
+  scaler: robust                  # robust | standard   (fit on training normals only)
+
+baselines:
+  iforest: {n_estimators: 300, max_samples: 256, contamination: auto}
+  ocsvm:   {nu: 0.02, gamma: scale, kernel: rbf, max_train: 30000}
+
+ae:
+  hidden: [20, 10, 5]             # encoder widths; last entry is the bottleneck
+  epochs: 60
+  batch_size: 256
+  lr: 0.001
+  weight_decay: 0.0
+  patience: 8                     # early stopping on held-out training normals
+  holdout_frac: 0.1
+  train_set: normal               # normal | all  (all = contaminated, no labels used)
+
+rda:
+  hidden: [20, 10, 5]
+  outer_iters: 12                 # alternating-optimisation rounds
+  inner_epochs: 4                 # AE epochs per round
+  batch_size: 256
+  lr: 0.001
+  norm: l21                       # l1 | l21  (row-wise is natural for whole-transaction anomalies)
+  lam: 0.5                        # absolute shrinkage threshold; ignored if lam_quantile is set
+  lam_quantile: 0.995             # lambda = this quantile of row residual norms each round (scale-free:
+                                  #   ~(1-q) of rows are pushed into S). Set to null to use absolute `lam`.
+  lam_quantile_grid: [0.95, 0.98, 0.99, 0.995, 0.999]   # swept on validation by --sweep-lam
+  lam_grid: [0.25, 0.5, 1.0, 2.0] # used only if lam_quantile_grid is removed
+
+eval:
+  threshold: f1                   # f1 | recall  (chosen on validation, applied to test)
+  target_recall: 0.8
