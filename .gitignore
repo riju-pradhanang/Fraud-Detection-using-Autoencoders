@@ -10,4 +10,13 @@ outputs/*
 !outputs/.gitkeep
 *.pt
 .DS_Store
-./data
+./data.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+pip-metadata-*/
+pip-unpack-*/
+.ipynb_checkpoints/
+.vscode/
+.env
